@@ -26,26 +26,6 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
   const isAuthenticated = !!user;
   const { toggleFavorite, isFavorite } = useApp();
   const isVerseFavorite = isFavorite(verse.reference);
-
-  const handleShare = () => {
-    const verseRefUrl = verse.reference.replace(/\s+/g, '-').toLowerCase();
-    const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
-    const shareText = `"${verse.text}" - ${verse.reference}`;
-
-    if (navigator.share) {
-      navigator.share({
-        title: 'Daily Script Verse',
-        text: shareText,
-        url: shareUrl,
-      }).catch((error) => console.log('Share dismissed or failed:', error));
-    } else {
-      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-      toast({
-        title: 'Link Copied',
-        description: 'Sharing not supported, so we copied the verse and link to your clipboard.',
-      });
-    }
-  };
   
   const handleFavoriteToggle = () => {
     if (isAuthenticated) {
@@ -88,7 +68,30 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
           <Button
             variant="ghost"
             size="lg"
-            onClick={handleShare}
+            onClick={() => {
+              const verseRefUrl = verse.reference.replace(/\s+/g, '-').toLowerCase();
+              const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
+              const shareText = `"${verse.text}" - ${verse.reference}`;
+
+              if (navigator.share) {
+                navigator.share({
+                  title: 'Daily Script Verse',
+                  text: shareText,
+                  url: shareUrl,
+                }).catch((error) => {
+                  // Catch errors like the user dismissing the share sheet
+                  if (error.name !== 'AbortError') {
+                    console.error('Share failed:', error);
+                  }
+                });
+              } else {
+                navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+                toast({
+                  title: 'Link Copied',
+                  description: 'Sharing not supported, so we copied the verse and link to your clipboard.',
+                });
+              }
+            }}
             aria-label="Share"
             className="h-12 w-12"
           >
