@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2, Copy, BookOpen } from 'lucide-react';
+import { Heart, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/hooks/use-app';
 import type { Verse } from '@/lib/verses';
@@ -29,14 +29,6 @@ export default function VerseCard({ verse }: VerseCardProps) {
 
   const shareText = `"${verse.text}" - ${verse.reference}`;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(shareText);
-    toast({
-      title: 'Copied to clipboard!',
-      description: verse.reference,
-    });
-  };
-
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -49,7 +41,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
       }
     } else {
       // Fallback for browsers that don't support navigator.share
-      handleCopy();
+      navigator.clipboard.writeText(shareText);
       toast({
         title: 'Share not supported',
         description: 'Your browser does not support native sharing. Verse copied to clipboard instead.',
@@ -71,7 +63,6 @@ export default function VerseCard({ verse }: VerseCardProps) {
     <Card className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
         <CardTitle className="font-headline text-3xl flex items-center gap-3">
-          <BookOpen className="h-8 w-8 text-primary" />
           {verse.reference}
         </CardTitle>
         <CardDescription>King James Version</CardDescription>
