@@ -75,7 +75,7 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
   };
 
   return (
-    <Card className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="w-full shadow-lg hover:shadow-xl transition-all duration-500">
       <CardHeader>
         <CardTitle className="font-headline text-3xl flex items-center gap-3">
           {verse.reference}
