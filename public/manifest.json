@@ -1,11 +1,11 @@
 {
   "name": "Daily Script",
-  "short_name": "Daily Script",
+  "short_name": "DailyScript",
   "description": "Daily Bible Verses & Random Verse App",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#E8EAF6",
-  "theme_color": "#7C7BAD",
+  "background_color": "#7c7bad",
+  "theme_color": "#7c7bad",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
