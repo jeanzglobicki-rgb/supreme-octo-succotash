@@ -37,8 +37,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
     });
   };
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
@@ -100,14 +99,6 @@ export default function VerseCard({ verse }: VerseCardProps) {
             aria-label="Share"
           >
             <Share2 className="h-6 w-6 text-accent" />
-          </Button>
-           <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleCopy}
-            aria-label="Copy"
-          >
-            <Copy className="h-6 w-6 text-accent" />
           </Button>
         </div>
       </CardFooter>
