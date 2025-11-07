@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -31,8 +32,8 @@ export default function Home() {
     setReflection(null); // Clear reflection when verse changes
   }, []);
 
-  const handleGetRandomVerse = useCallback(() => {
-    const verse = getRandomVerse();
+  const handleGetRandomVerse = useCallback(async () => {
+    const verse = await getRandomVerse();
     setReflection(null); // Clear reflection when verse changes
 
     if (isPremium) {
@@ -59,9 +60,9 @@ export default function Home() {
     setReflection(null); // Clear reflection when verse changes
   };
 
-  const handleInterstitialClose = () => {
+  const handleInterstitialClose = async () => {
     setShowInterstitial(false);
-    const verse = getRandomVerse();
+    const verse = await getRandomVerse();
     setCurrentVerse(verse);
     setIsDaily(false);
   };
