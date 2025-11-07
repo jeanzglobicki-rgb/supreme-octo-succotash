@@ -4,7 +4,7 @@ import { useState } from 'react';
 import {
   GoogleAuthProvider,
   signInAnonymously,
-  signInWithRedirect,
+  signInWithPopup,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 import {
@@ -53,8 +53,9 @@ export function UserNav() {
     try {
       if (providerName === 'google') {
         const provider = new GoogleAuthProvider();
-        // Use signInWithRedirect for a mobile-friendly experience
-        await signInWithRedirect(auth, provider);
+        await signInWithPopup(auth, provider);
+        toast({ title: 'Successfully signed in!' });
+        setShowSignInDialog(false);
       } else if (providerName === 'anonymous') {
         await signInAnonymously(auth);
         toast({ title: 'Successfully signed in!' });
@@ -68,10 +69,7 @@ export function UserNav() {
         description: 'There was a problem with your sign in.',
       });
     } finally {
-      // isSigningIn will remain true for redirect, which is what we want
-      if (providerName === 'anonymous') {
-        setIsSigningIn(false);
-      }
+      setIsSigningIn(false);
     }
   };
 

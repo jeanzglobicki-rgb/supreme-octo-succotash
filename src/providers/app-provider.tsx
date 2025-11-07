@@ -9,7 +9,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { Auth, getRedirectResult, User, signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
+import { Auth, getRedirectResult, User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
 export interface AppContextType {
@@ -34,33 +34,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isRedirectLoading, setIsRedirectLoading] = useState(true);
 
   useEffect(() => {
+    // This effect now simply manages the initial loading state.
     if (auth) {
-      getRedirectResult(auth)
-        .then((result) => {
-          if (result) {
-            // This is the signed-in user
-            const user = result.user;
-            toast({
-              title: "Signed in successfully!",
-              description: `Welcome back, ${user.displayName || 'friend'}.`,
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error processing redirect result:", error);
-          toast({
-            variant: "destructive",
-            title: "Sign in failed",
-            description: "There was a problem signing you in. Please try again.",
-          });
-        })
-        .finally(() => {
-          setIsRedirectLoading(false);
-        });
-    } else {
-        setIsRedirectLoading(false);
+      // Once auth is available, we assume the initial redirect check (if any) is done.
+      setIsRedirectLoading(false);
     }
-  }, [auth, toast]);
+  }, [auth]);
 
 
   // User document hook
