@@ -34,6 +34,7 @@ export default function Home() {
   const handleGetRandomVerse = useCallback(async () => {
     const verse = await getRandomVerse();
     setReflection(null); // Clear reflection when verse changes
+    setReflectionError(null);
 
     if (isPremium) {
       setCurrentVerse(verse);
@@ -78,11 +79,13 @@ export default function Home() {
       <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-2xl mx-auto space-y-8">
           {currentVerse && <VerseCard key={currentVerse.reference} verse={currentVerse} onGetReflection={handleGetReflection} />}
-          <VerseReflection
-            reflection={reflection}
-            isLoading={isReflectionLoading}
-            error={reflectionError}
-          />
+          <div className="min-h-[160px]">
+            <VerseReflection
+              reflection={reflection}
+              isLoading={isReflectionLoading}
+              error={reflectionError}
+            />
+          </div>
           <div className="flex justify-center">
             <Button
               size="lg"
