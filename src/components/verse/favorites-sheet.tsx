@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useApp } from '@/hooks/use-app';
 import { Heart, Trash2 } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+import { Verse } from '@/lib/verses';
 
 interface FavoritesSheetProps {
   open: boolean;
@@ -57,7 +58,7 @@ export default function FavoritesSheet({ open, onOpenChange }: FavoritesSheetPro
                       variant="ghost"
                       size="icon"
                       className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => toggleFavorite(verse)}
+                      onClick={() => toggleFavorite(verse as Verse)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                       <span className="sr-only">Remove favorite</span>

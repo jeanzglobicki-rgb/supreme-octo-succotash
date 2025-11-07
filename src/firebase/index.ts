@@ -13,15 +13,14 @@ export function initializeFirebase() {
     } else {
         firebaseApp = getApp();
     }
-    return getSdks(firebaseApp);
-}
+    const auth = getAuth(firebaseApp);
+    const firestore = getFirestore(firebaseApp);
 
-export function getSdks(firebaseApp: FirebaseApp) {
-  return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
-  };
+    return {
+        firebaseApp,
+        auth,
+        firestore
+    };
 }
 
 export * from './provider';
@@ -32,3 +31,4 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
+export { FirebaseClientProvider } from './client-provider';
