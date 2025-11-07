@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { getDailyVerse, getRandomLocalVerse, type Verse } from '@/lib/verses';
 import { getRandomVerse } from '@/lib/verse-actions';
 import Header from '@/components/layout/header';
@@ -33,7 +33,7 @@ export default function Home() {
     setReflection(null); // Clear reflection when verse changes
   }, []);
 
-  const handleGetRandomVerse = useCallback(async () => {
+  const handleGetRandomVerse = async () => {
     // We now call the async getRandomVerse which can be remote or local
     const verse = await getRandomVerse();
     setReflection(null); // Clear reflection when verse changes
@@ -52,7 +52,7 @@ export default function Home() {
     } else {
       setCurrentVerse(verse);
     }
-  }, [randomClickCount, isPremium]);
+  };
 
   const handleInterstitialClose = async () => {
     setShowInterstitial(false);
