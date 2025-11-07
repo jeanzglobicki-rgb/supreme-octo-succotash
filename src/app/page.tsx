@@ -19,7 +19,6 @@ export default function Home() {
   const { user, isPremium } = useApp();
   const isAuthenticated = !!user;
   const [currentVerse, setCurrentVerse] = useState<Verse | null>(null);
-  const [isDaily, setIsDaily] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
   const [randomClickCount, setRandomClickCount] = useState(0);
   const [reflection, setReflection] = useState<ReflectionResponse | null>(null);
@@ -38,7 +37,6 @@ export default function Home() {
 
     if (isPremium) {
       setCurrentVerse(verse);
-      setIsDaily(false);
       return;
     }
 
@@ -49,22 +47,13 @@ export default function Home() {
       setShowInterstitial(true);
     } else {
       setCurrentVerse(verse);
-      setIsDaily(false);
     }
   }, [randomClickCount, isPremium]);
-
-  const handleShowDailyVerse = () => {
-    const verse = getDailyVerse();
-    setCurrentVerse(verse);
-    setIsDaily(true);
-    setReflection(null); // Clear reflection when verse changes
-  };
 
   const handleInterstitialClose = async () => {
     setShowInterstitial(false);
     const verse = await getRandomVerse();
     setCurrentVerse(verse);
-    setIsDaily(false);
   };
 
   const handleGetReflection = async () => {
@@ -94,7 +83,7 @@ export default function Home() {
             isLoading={isReflectionLoading}
             error={reflectionError}
           />
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex justify-center">
             <Button
               size="lg"
               onClick={handleGetRandomVerse}
@@ -102,9 +91,6 @@ export default function Home() {
             >
               <RefreshCw className="mr-2 h-5 w-5" />
               Get a Random Verse
-            </Button>
-            <Button size="lg" variant="outline" onClick={handleShowDailyVerse} className={`w-full sm:w-auto font-headline transition-opacity duration-300 ${isDaily ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-              Back to Daily Verse
             </Button>
           </div>
           {!isAuthenticated && <p className="text-center text-muted-foreground">Sign in to save your favorite verses.</p>}
