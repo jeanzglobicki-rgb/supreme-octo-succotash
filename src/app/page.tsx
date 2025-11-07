@@ -9,12 +9,11 @@ import InterstitialAd from '@/components/ads/interstitial-ad';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useApp } from '@/hooks/use-app';
-import { useUser } from '@/firebase';
 
 const INTERSTITIAL_AD_FREQUENCY = 10;
 
 export default function Home() {
-  const { user } = useUser();
+  const { user, isPremium } = useApp();
   const isAuthenticated = !!user;
   const [currentVerse, setCurrentVerse] = useState<Verse | null>(null);
   const [isDaily, setIsDaily] = useState(true);
@@ -26,6 +25,12 @@ export default function Home() {
   }, []);
 
   const handleGetRandomVerse = useCallback(() => {
+    if (isPremium) {
+      setCurrentVerse(getRandomVerse());
+      setIsDaily(false);
+      return;
+    }
+
     const newCount = randomClickCount + 1;
     setRandomClickCount(newCount);
 
@@ -35,7 +40,7 @@ export default function Home() {
       setCurrentVerse(getRandomVerse());
       setIsDaily(false);
     }
-  }, [randomClickCount]);
+  }, [randomClickCount, isPremium]);
 
   const handleShowDailyVerse = () => {
     setCurrentVerse(getDailyVerse());
@@ -72,8 +77,8 @@ export default function Home() {
           {!isAuthenticated && <p className="text-center text-muted-foreground">Sign in to save your favorite verses.</p>}
         </div>
       </main>
-      <AdBanner />
-      <InterstitialAd open={showInterstitial} onOpenChange={setShowInterstitial} onAdClosed={handleInterstitialClose} />
+      {!isPremium && <AdBanner />}
+      {!isPremium && <InterstitialAd open={showInterstitial} onOpenChange={setShowInterstitial} onAdClosed={handleInterstitialClose} />}
     </div>
   );
 }

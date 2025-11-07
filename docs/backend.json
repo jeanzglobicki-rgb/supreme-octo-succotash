@@ -25,6 +25,10 @@
         "darkModePreference": {
           "type": "boolean",
           "description": "User preference for dark mode."
+        },
+        "isPremium": {
+          "type": "boolean",
+          "description": "Indicates if the user has paid to remove ads."
         }
       },
       "required": [

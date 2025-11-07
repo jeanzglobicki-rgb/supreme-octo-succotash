@@ -20,6 +20,9 @@ import {
 } from '@/components/ui/select';
 import { useTheme } from '@/providers/theme-provider';
 import { useEffect, useState } from 'react';
+import { useApp } from '@/hooks/use-app';
+import { Zap } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -28,11 +31,39 @@ interface SettingsDialogProps {
 
 export default function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme();
+  const { user, isPremium, upgradeToPremium } = useApp();
+  const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleUpgrade = async () => {
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Not Signed In",
+            description: "You must be signed in to upgrade.",
+        });
+        return;
+    }
+    try {
+      await upgradeToPremium();
+      toast({
+        title: 'Upgrade Successful!',
+        description: "You are now a premium member. Enjoy the ad-free experience!",
+      });
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Upgrade failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Upgrade Failed",
+        description: "Something went wrong. Please try again.",
+      });
+    }
+  }
 
   if (!isClient) return null;
 
@@ -77,9 +108,31 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
             </Label>
             <Switch id="notifications" disabled />
           </div>
+           {user && !isPremium && (
+            <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <div className="flex flex-col items-start gap-2">
+                    <h3 className="font-headline text-lg flex items-center gap-2 text-primary">
+                        <Zap className="h-5 w-5" />
+                        Go Premium
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                        Remove all ads and support the app for just $1.
+                    </p>
+                </div>
+                 <Button onClick={handleUpgrade} className="w-full font-bold">
+                    Upgrade for $1
+                 </Button>
+            </div>
+           )}
+           {isPremium && (
+             <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 text-center">
+                <p className="font-bold text-green-600 dark:text-green-400">You are a Premium member!</p>
+                <p className="text-sm text-muted-foreground">Enjoy your ad-free experience.</p>
+             </div>
+           )}
         </div>
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)} className="w-full">
+          <Button onClick={() => onOpenChange(false)} className="w-full" variant="outline">
             Done
           </Button>
         </DialogFooter>

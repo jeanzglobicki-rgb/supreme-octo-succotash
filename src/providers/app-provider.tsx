@@ -2,7 +2,7 @@
 
 import { createContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { type Verse } from '@/lib/verses';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import {
   collection,
   doc,
@@ -10,15 +10,15 @@ import {
   deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
-interface AppContextType {
+export interface AppContextType {
   favorites: (Verse & {id: string})[];
   toggleFavorite: (verse: Verse) => void;
   isFavorite: (verseReference: string) => boolean;
   favoritesLoading: boolean;
+  isPremium: boolean;
+  upgradeToPremium: () => Promise<void>;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -26,6 +26,15 @@ export const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const firestore = useFirestore();
+
+  // User document hook
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+  const { data: userData } = useDoc(userDocRef);
+  
+  const isPremium = useMemo(() => userData?.isPremium || false, [userData]);
 
   const favoritesQuery = useMemoFirebase(() => {
       if (!user || !firestore) return null;
@@ -59,11 +68,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return favorites?.some(fav => fav.reference === verseReference) || false;
   }, [favorites]);
 
+  const upgradeToPremium = useCallback(async () => {
+    if (!userDocRef) {
+      throw new Error("User document reference not available.");
+    }
+    // In a real app, this would involve a payment gateway.
+    // Here, we'll just update the user's document.
+    updateDocumentNonBlocking(userDocRef, { isPremium: true });
+  }, [userDocRef]);
+
   const value = {
     favorites: favorites || [],
     toggleFavorite,
     isFavorite,
     favoritesLoading,
+    isPremium,
+    upgradeToPremium,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
