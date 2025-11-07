@@ -43,33 +43,34 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const verseRefUrl = verse.reference.replace(/[\s:]+/g, '-').toLowerCase();
     const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
     const shareText = `"${verse.text}" - ${verse.reference}`;
+    const clipboardText = `${shareText}\n${shareUrl}`;
 
     if (navigator.share) {
-      navigator.share({
-        title: 'Daily Script Verse',
-        text: shareText,
-        url: shareUrl,
-      }).catch((error) => {
-        if (error.name !== 'AbortError') {
-          console.error('Share failed:', error);
-          // Fallback to copy for other errors
-          navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-          toast({
-            title: 'Link Copied',
-            description: 'Sharing failed, so we copied the verse and link to your clipboard.',
-          });
-        }
-      });
+      try {
+        await navigator.share({
+          title: 'Daily Script Verse',
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (error) {
+        // Catch any error, not just AbortError
+        console.error('Share failed, falling back to clipboard:', error);
+        navigator.clipboard.writeText(clipboardText);
+        toast({
+          title: 'Link Copied',
+          description: 'Sharing was not successful, so we copied the verse to your clipboard.',
+        });
+      }
     } else {
       // Fallback for browsers that don't support navigator.share
-      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      navigator.clipboard.writeText(clipboardText);
       toast({
         title: 'Link Copied',
-        description: 'Sharing not supported, so we copied the verse and link to your clipboard.',
+        description: 'Sharing not supported, so we copied the verse to your clipboard.',
       });
     }
   };
