@@ -14,6 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Heart, Share2, Copy, BookOpen, MessageCircle, Twitter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +34,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
   const isVerseFavorite = isFavorite(verse.reference);
 
   const shareText = `"${verse.text}" - ${verse.reference}`;
+  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareText);
@@ -50,16 +52,16 @@ export default function VerseCard({ verse }: VerseCardProps) {
           text: shareText,
         });
       } catch (error) {
-        console.error('Error sharing:', error);
-        // Fallback to copy if share fails, e.g., user cancels dialog
-        toast({
-          variant: "destructive",
-          title: "Sharing cancelled",
-          description: "The verse was not shared."
-        })
+        // This error can happen if the user cancels the share dialog, so we don't need to show a toast.
+        console.log('Share dismissed:', error);
       }
     } else {
         // Fallback for browsers that don't support navigator.share
+        toast({
+            variant: "destructive",
+            title: "Share not supported",
+            description: "Your browser does not support native sharing. Verse copied instead.",
+        });
         handleCopy();
     }
   };
@@ -101,7 +103,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Share" onClick={handleShare}>
+              <Button variant="ghost" size="icon" aria-label="Share">
                 <Share2 className="h-6 w-6 text-accent" />
               </Button>
             </DropdownMenuTrigger>
@@ -109,6 +111,17 @@ export default function VerseCard({ verse }: VerseCardProps) {
               <DropdownMenuItem onSelect={handleCopy}>
                 <Copy className="mr-2 h-4 w-4" />
                 <span>Copy Text</span>
+              </DropdownMenuItem>
+               <DropdownMenuItem asChild>
+                <a href={twitterShareUrl} target="_blank" rel="noopener noreferrer">
+                  <Twitter className="mr-2 h-4 w-4" />
+                  <span>Share on X</span>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={handleShare}>
+                <MessageCircle className="mr-2 h-4 w-4" />
+                <span>Share via...</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
