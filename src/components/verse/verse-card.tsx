@@ -9,14 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { Heart, Share2, Copy, BookOpen, MessageCircle, Twitter } from 'lucide-react';
+import { Heart, Share2, Copy, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/hooks/use-app';
 import type { Verse } from '@/lib/verses';
@@ -35,7 +28,6 @@ export default function VerseCard({ verse }: VerseCardProps) {
   const isVerseFavorite = isFavorite(verse.reference);
 
   const shareText = `"${verse.text}" - ${verse.reference}`;
-  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareText);
@@ -54,15 +46,15 @@ export default function VerseCard({ verse }: VerseCardProps) {
           text: shareText,
         });
       } catch (error) {
-        console.log('Share dismissed:', error);
+        console.log('Share dismissed or failed:', error);
       }
     } else {
-      toast({
-        variant: 'destructive',
-        title: 'Share not supported',
-        description: 'Your browser does not support native sharing. Verse copied instead.',
-      });
+      // Fallback for browsers that don't support navigator.share
       handleCopy();
+      toast({
+        title: 'Share not supported',
+        description: 'Your browser does not support native sharing. Verse copied to clipboard instead.',
+      });
     }
   };
 
@@ -101,32 +93,22 @@ export default function VerseCard({ verse }: VerseCardProps) {
           >
             <Heart className={`h-6 w-6 ${isVerseFavorite ? 'fill-red-500 text-red-500' : 'text-accent'}`} />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Share">
-                <Share2 className="h-6 w-6 text-accent" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={handleCopy}>
-                <Copy className="mr-2 h-4 w-4" />
-                <span>Copy Text</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href={twitterShareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center">
-                  <Twitter className="mr-2 h-4 w-4" />
-                  <span>Share on X</span>
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                 <button onClick={handleShare} className="flex items-center w-full">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    <span>Share via...</span>
-                </button>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleShare}
+            aria-label="Share"
+          >
+            <Share2 className="h-6 w-6 text-accent" />
+          </Button>
+           <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCopy}
+            aria-label="Copy"
+          >
+            <Copy className="h-6 w-6 text-accent" />
+          </Button>
         </div>
       </CardFooter>
     </Card>
