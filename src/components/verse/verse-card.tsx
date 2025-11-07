@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/hooks/use-app';
 import type { Verse } from '@/lib/verses';
 import { useUser } from '@/firebase';
+import React from 'react';
 
 interface VerseCardProps {
   verse: Verse;
@@ -44,7 +45,8 @@ export default function VerseCard({ verse }: VerseCardProps) {
     });
   };
 
-  const handleShare = async () => {
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (navigator.share) {
       try {
         await navigator.share({
@@ -52,20 +54,18 @@ export default function VerseCard({ verse }: VerseCardProps) {
           text: shareText,
         });
       } catch (error) {
-        // This error can happen if the user cancels the share dialog, so we don't need to show a toast.
         console.log('Share dismissed:', error);
       }
     } else {
-        // Fallback for browsers that don't support navigator.share
-        toast({
-            variant: "destructive",
-            title: "Share not supported",
-            description: "Your browser does not support native sharing. Verse copied instead.",
-        });
-        handleCopy();
+      toast({
+        variant: 'destructive',
+        title: 'Share not supported',
+        description: 'Your browser does not support native sharing. Verse copied instead.',
+      });
+      handleCopy();
     }
   };
-  
+
   const handleFavoriteToggle = () => {
     if (isAuthenticated) {
       toggleFavorite(verse);
@@ -112,16 +112,18 @@ export default function VerseCard({ verse }: VerseCardProps) {
                 <Copy className="mr-2 h-4 w-4" />
                 <span>Copy Text</span>
               </DropdownMenuItem>
-               <DropdownMenuItem asChild>
-                <a href={twitterShareUrl} target="_blank" rel="noopener noreferrer">
+              <DropdownMenuItem asChild>
+                <a href={twitterShareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center">
                   <Twitter className="mr-2 h-4 w-4" />
                   <span>Share on X</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={handleShare}>
-                <MessageCircle className="mr-2 h-4 w-4" />
-                <span>Share via...</span>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                 <button onClick={handleShare} className="flex items-center w-full">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    <span>Share via...</span>
+                </button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
