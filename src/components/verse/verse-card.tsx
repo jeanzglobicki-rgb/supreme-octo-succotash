@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2 } from 'lucide-react';
+import { Heart, Share2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/hooks/use-app';
 import type { Verse } from '@/lib/verses';
@@ -17,34 +17,28 @@ import React from 'react';
 
 interface VerseCardProps {
   verse: Verse;
+  onGetReflection: () => void;
 }
 
-export default function VerseCard({ verse }: VerseCardProps) {
+export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
   const { toast } = useToast();
   const { user } = useUser();
   const isAuthenticated = !!user;
   const { toggleFavorite, isFavorite } = useApp();
   const isVerseFavorite = isFavorite(verse.reference);
 
-  const handleShare = async () => {
+  const handleShare = () => {
     const verseRefUrl = verse.reference.replace(/\s+/g, '-').toLowerCase();
     const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
     const shareText = `"${verse.text}" - ${verse.reference}`;
 
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Daily Script Verse',
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch (error) {
-        // This can happen if the user cancels the share dialog.
-        // We will not show an error toast in this case.
-        console.log('Share dismissed or failed:', error);
-      }
+      navigator.share({
+        title: 'Daily Script Verse',
+        text: shareText,
+        url: shareUrl,
+      }).catch((error) => console.log('Share dismissed or failed:', error));
     } else {
-      // Fallback for browsers that don't support navigator.share
       navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       toast({
         title: 'Link Copied',
@@ -52,7 +46,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
       });
     }
   };
-
+  
   const handleFavoriteToggle = () => {
     if (isAuthenticated) {
       toggleFavorite(verse);
@@ -84,21 +78,30 @@ export default function VerseCard({ verse }: VerseCardProps) {
       <CardFooter className="flex justify-start items-center gap-2">
           <Button
             variant="ghost"
-            size="icon"
+            size="lg"
             onClick={handleFavoriteToggle}
             aria-label="Favorite"
-            className="h-10 w-10"
+            className="h-12 w-12"
           >
-            <Heart className={`h-6 w-6 ${isVerseFavorite ? 'fill-red-500 text-red-500' : 'text-accent'}`} />
+            <Heart className={`h-7 w-7 ${isVerseFavorite ? 'fill-red-500 text-red-500' : 'text-accent'}`} />
           </Button>
           <Button
             variant="ghost"
-            size="icon"
+            size="lg"
             onClick={handleShare}
             aria-label="Share"
-            className="h-10 w-10"
+            className="h-12 w-12"
           >
-            <Share2 className="h-6 w-6 text-accent" />
+            <Share2 className="h-7 w-7 text-accent" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={onGetReflection}
+            aria-label="Get AI Reflection"
+            className="h-12 w-12"
+          >
+            <Sparkles className="h-7 w-7 text-accent" />
           </Button>
       </CardFooter>
     </Card>

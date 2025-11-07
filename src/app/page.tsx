@@ -9,6 +9,8 @@ import InterstitialAd from '@/components/ads/interstitial-ad';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useApp } from '@/hooks/use-app';
+import VerseReflection from '@/components/verse/verse-reflection';
+import { generateReflection, type ReflectionResponse } from '@/ai/flows/reflection-flow';
 
 const INTERSTITIAL_AD_FREQUENCY = 10;
 
@@ -19,14 +21,22 @@ export default function Home() {
   const [isDaily, setIsDaily] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
   const [randomClickCount, setRandomClickCount] = useState(0);
+  const [reflection, setReflection] = useState<ReflectionResponse | null>(null);
+  const [isReflectionLoading, setIsReflectionLoading] = useState(false);
+  const [reflectionError, setReflectionError] = useState<string | null>(null);
 
   useEffect(() => {
-    setCurrentVerse(getDailyVerse());
+    const verse = getDailyVerse();
+    setCurrentVerse(verse);
+    setReflection(null); // Clear reflection when verse changes
   }, []);
 
   const handleGetRandomVerse = useCallback(() => {
+    const verse = getRandomVerse();
+    setReflection(null); // Clear reflection when verse changes
+
     if (isPremium) {
-      setCurrentVerse(getRandomVerse());
+      setCurrentVerse(verse);
       setIsDaily(false);
       return;
     }
@@ -37,20 +47,39 @@ export default function Home() {
     if (newCount % INTERSTITIAL_AD_FREQUENCY === 0) {
       setShowInterstitial(true);
     } else {
-      setCurrentVerse(getRandomVerse());
+      setCurrentVerse(verse);
       setIsDaily(false);
     }
   }, [randomClickCount, isPremium]);
 
   const handleShowDailyVerse = () => {
-    setCurrentVerse(getDailyVerse());
+    const verse = getDailyVerse();
+    setCurrentVerse(verse);
     setIsDaily(true);
+    setReflection(null); // Clear reflection when verse changes
   };
 
   const handleInterstitialClose = () => {
     setShowInterstitial(false);
-    setCurrentVerse(getRandomVerse());
+    const verse = getRandomVerse();
+    setCurrentVerse(verse);
     setIsDaily(false);
+  };
+
+  const handleGetReflection = async () => {
+    if (!currentVerse) return;
+    setIsReflectionLoading(true);
+    setReflectionError(null);
+    setReflection(null);
+    try {
+      const result = await generateReflection(currentVerse);
+      setReflection(result);
+    } catch (error) {
+      console.error('Error generating reflection:', error);
+      setReflectionError('Sorry, the reflection could not be generated at this time.');
+    } finally {
+      setIsReflectionLoading(false);
+    }
   };
 
   return (
@@ -58,7 +87,12 @@ export default function Home() {
       <Header />
       <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-2xl mx-auto space-y-8">
-          {currentVerse && <VerseCard key={currentVerse.reference} verse={currentVerse} />}
+          {currentVerse && <VerseCard key={currentVerse.reference} verse={currentVerse} onGetReflection={handleGetReflection} />}
+          <VerseReflection
+            reflection={reflection}
+            isLoading={isReflectionLoading}
+            error={reflectionError}
+          />
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               size="lg"
