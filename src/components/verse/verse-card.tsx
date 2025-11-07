@@ -39,11 +39,9 @@ export default function VerseCard({ verse }: VerseCardProps) {
           url: shareUrl,
         });
       } catch (error) {
-        // This can happen if the user dismisses the share sheet, so we don't need to show an error.
         console.log('Share dismissed or failed:', error);
       }
     } else {
-      // Fallback for browsers that don't support navigator.share
       navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       toast({
         title: 'Link Copied',
@@ -80,13 +78,13 @@ export default function VerseCard({ verse }: VerseCardProps) {
           "{verse.text}"
         </p>
       </CardContent>
-      <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex gap-2">
+      <CardFooter className="flex justify-start items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleFavoriteToggle}
             aria-label="Favorite"
+            className="h-10 w-10"
           >
             <Heart className={`h-6 w-6 ${isVerseFavorite ? 'fill-red-500 text-red-500' : 'text-accent'}`} />
           </Button>
@@ -95,10 +93,10 @@ export default function VerseCard({ verse }: VerseCardProps) {
             size="icon"
             onClick={() => handleShare()}
             aria-label="Share"
+            className="h-10 w-10"
           >
             <Share2 className="h-6 w-6 text-accent" />
           </Button>
-        </div>
       </CardFooter>
     </Card>
   );
