@@ -39,9 +39,12 @@ export default function VerseCard({ verse }: VerseCardProps) {
           url: shareUrl,
         });
       } catch (error) {
+        // This can happen if the user cancels the share dialog.
+        // We will not show an error toast in this case.
         console.log('Share dismissed or failed:', error);
       }
     } else {
+      // Fallback for browsers that don't support navigator.share
       navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       toast({
         title: 'Link Copied',
@@ -91,7 +94,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleShare()}
+            onClick={handleShare}
             aria-label="Share"
             className="h-10 w-10"
           >
