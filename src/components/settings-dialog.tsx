@@ -31,7 +31,7 @@ interface SettingsDialogProps {
 
 export default function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme();
-  const { user, isPremium, upgradeToPremium } = useApp();
+  const { user, isPremium, upgradeToPremium, notificationPreference, setNotificationPreference } = useApp();
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   
@@ -63,6 +63,23 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
         description: "Something went wrong. Please try again.",
       });
     }
+  }
+
+  const handleNotificationChange = (checked: boolean) => {
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Not Signed In",
+            description: "You must be signed in to manage notifications.",
+        });
+        return;
+    }
+    const newPreference = checked ? 'daily' : 'off';
+    setNotificationPreference(newPreference);
+    toast({
+        title: `Notifications ${checked ? 'Enabled' : 'Disabled'}`,
+        description: `Your daily verse notifications are now ${checked ? 'on' : 'off'}.`
+    });
   }
 
   if (!isClient) return null;
@@ -106,7 +123,12 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
             <Label htmlFor="notifications" className="col-span-2">
               Daily Notifications
             </Label>
-            <Switch id="notifications" disabled />
+            <Switch 
+              id="notifications" 
+              disabled={!user}
+              checked={notificationPreference === 'daily'}
+              onCheckedChange={handleNotificationChange}
+            />
           </div>
            {user && !isPremium && (
             <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">

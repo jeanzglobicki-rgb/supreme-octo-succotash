@@ -6,8 +6,6 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import {
   collection,
   doc,
-  setDoc,
-  deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -19,6 +17,8 @@ export interface AppContextType {
   favoritesLoading: boolean;
   isPremium: boolean;
   upgradeToPremium: () => Promise<void>;
+  notificationPreference: string;
+  setNotificationPreference: (preference: 'daily' | 'off') => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -35,6 +35,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { data: userData } = useDoc(userDocRef);
   
   const isPremium = useMemo(() => userData?.isPremium || false, [userData]);
+  const notificationPreference = useMemo(() => userData?.notificationPreferences || 'off', [userData]);
 
   const favoritesQuery = useMemoFirebase(() => {
       if (!user || !firestore) return null;
@@ -77,6 +78,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateDocumentNonBlocking(userDocRef, { isPremium: true });
   }, [userDocRef]);
 
+  const setNotificationPreference = useCallback((preference: 'daily' | 'off') => {
+    if (!userDocRef) return;
+    updateDocumentNonBlocking(userDocRef, { notificationPreferences: preference });
+  }, [userDocRef]);
+
   const value = {
     favorites: favorites || [],
     toggleFavorite,
@@ -84,6 +90,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     favoritesLoading,
     isPremium,
     upgradeToPremium,
+    notificationPreference,
+    setNotificationPreference,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
