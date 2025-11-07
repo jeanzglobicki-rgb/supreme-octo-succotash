@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, Share2, Copy, BookOpen } from 'lucide-react';
+import { Heart, Share2, Copy, BookOpen, MessageCircle, Twitter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/hooks/use-app';
 import type { Verse } from '@/lib/verses';
@@ -32,12 +32,36 @@ export default function VerseCard({ verse }: VerseCardProps) {
   const { toggleFavorite, isFavorite } = useApp();
   const isVerseFavorite = isFavorite(verse.reference);
 
+  const shareText = `"${verse.text}" - ${verse.reference}`;
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${verse.text} - ${verse.reference}`);
+    navigator.clipboard.writeText(shareText);
     toast({
       title: 'Copied to clipboard!',
       description: verse.reference,
     });
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Daily Script Verse',
+          text: shareText,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        // Fallback to copy if share fails, e.g., user cancels dialog
+        toast({
+          variant: "destructive",
+          title: "Sharing cancelled",
+          description: "The verse was not shared."
+        })
+      }
+    } else {
+        // Fallback for browsers that don't support navigator.share
+        handleCopy();
+    }
   };
   
   const handleFavoriteToggle = () => {
@@ -77,7 +101,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Share">
+              <Button variant="ghost" size="icon" aria-label="Share" onClick={handleShare}>
                 <Share2 className="h-6 w-6 text-accent" />
               </Button>
             </DropdownMenuTrigger>
