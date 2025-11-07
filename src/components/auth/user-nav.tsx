@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  signInWithRedirect,
+  signInWithPopup,
   GoogleAuthProvider,
   signInAnonymously,
   signOut as firebaseSignOut,
@@ -52,11 +52,11 @@ export function UserNav() {
     try {
       if (providerName === 'google') {
         const provider = new GoogleAuthProvider();
-        await signInWithRedirect(auth, provider); // Use redirect for mobile-friendliness
+        await signInWithPopup(auth, provider);
       } else if (providerName === 'anonymous') {
         await signInAnonymously(auth);
-        toast({ title: 'Successfully signed in!' });
       }
+      toast({ title: 'Successfully signed in!' });
     } catch (error) {
       console.error('Sign in error:', error);
       toast({
