@@ -77,26 +77,30 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
-        <div className="w-full max-w-2xl mx-auto space-y-8">
-          {currentVerse && <VerseCard key={currentVerse.reference} verse={currentVerse} onGetReflection={handleGetReflection} />}
-          <div className="min-h-[160px]">
-            <VerseReflection
-              reflection={reflection}
-              isLoading={isReflectionLoading}
-              error={reflectionError}
-            />
+        <div className="w-full max-w-2xl mx-auto flex flex-col justify-center flex-grow">
+          <div className="space-y-8 flex-grow flex flex-col justify-center">
+            {currentVerse && <VerseCard key={currentVerse.reference} verse={currentVerse} onGetReflection={handleGetReflection} />}
+            <div className="min-h-[160px]">
+              <VerseReflection
+                reflection={reflection}
+                isLoading={isReflectionLoading}
+                error={reflectionError}
+              />
+            </div>
           </div>
-          <div className="flex justify-center">
-            <Button
-              size="lg"
-              onClick={handleGetRandomVerse}
-              className="w-full sm:w-auto font-headline"
-            >
-              <RefreshCw className="mr-2 h-5 w-5" />
-              Get a Random Verse
-            </Button>
+          <div className="py-8 space-y-4">
+            <div className="flex justify-center">
+                <Button
+                size="lg"
+                onClick={handleGetRandomVerse}
+                className="w-full sm:w-auto font-headline"
+                >
+                <RefreshCw className="mr-2 h-5 w-5" />
+                Get a Random Verse
+                </Button>
+            </div>
+            {!isAuthenticated && <p className="text-center text-muted-foreground">Sign in to save your favorite verses.</p>}
           </div>
-          {!isAuthenticated && <p className="text-center text-muted-foreground">Sign in to save your favorite verses.</p>}
         </div>
       </main>
       {!isPremium && <AdBanner />}
