@@ -1,0 +1,185 @@
+/**
+ * @fileoverview Firestore Security Rules for the Daily Script app.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles and
+ * favorite verses. Public collections (verses, daily verses, reflections)
+ * are readable by all, but writes are not currently permitted in the prototype.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information. Only the user can
+ *   read/write their own profile.
+ * - /users/{userId}/favoriteVerses/{favoriteVerseId}: Stores user's favorite
+ *   verses. Only the user can read/write their own favorite verses.
+ * - /verses/{verseId}: Stores Bible verses. Publicly readable.
+ * - /dailyVerses/{date}: Stores the verse of the day, using the date as the
+ *   document ID. Publicly readable.
+ * - /reflections/{reflectionId}: Stores AI-powered reflections on Bible verses.
+ *   Publicly readable.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - Public collections (verses, dailyVerses, reflections) are read-only for all users, including those who are not signed in.
+ * - The default security posture for ambiguous relationships is strict
+ *   owner-only access.
+ *
+ * Denormalization for Authorization:
+ *  -The `favoriteVerses` subcollection does not denormalize data, but instead relies on path-based ownership to ensure that only the current user can modify their own favorited verses.
+ *
+ * Structural Segregation:
+ * -Private user data (user profiles and favorite verses) is stored under the /users/{userId} path, while public data (verses, daily verses, and reflections) is stored in top-level collections. This ensures clear separation between private and public data and simplifies access control.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the request is authenticated.
+     * @return {boolean} True if the request is authenticated, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @param {string} userId The user ID to compare against the authenticated user ID.
+     * @return {boolean} True if the authenticated user ID matches the provided user ID, false otherwise.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of an existing document.
+     * @param {string} userId The user ID of the document owner.
+     * @return {boolean} True if the authenticated user is the owner of the document and the document exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Security rules for user profiles.
+     * @path /users/{userId}
+     * @allow (create) User with ID 'user123' can create their profile.
+     *    - request.auth.uid: 'user123'
+     *    - request.resource.data.id: 'user123'
+     * @allow (get) User with ID 'user123' can read their profile.
+     *    - request.auth.uid: 'user123'
+     * @allow (update) User with ID 'user123' can update their profile.
+     *    - request.auth.uid: 'user123'
+     * @allow (delete) User with ID 'user123' can delete their profile.
+     *    - request.auth.uid: 'user123'
+     * @deny (create) User with ID 'user456' cannot create profile for 'user123'.
+     *    - request.auth.uid: 'user456'
+     *    - request.resource.data.id: 'user123'
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId} {
+      // Allow the user to create their own profile, enforcing ID consistency.
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+
+      // Allow the user to read their own profile.
+      allow get: if isSignedIn() && isOwner(userId);
+
+      // Allow the user to update their own profile. The ID field must remain consistent.
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+
+      // Allow the user to delete their own profile.
+      allow delete: if isExistingOwner(userId);
+
+      // User listing is not permitted.
+      allow list: if false;
+    }
+
+    /**
+     * @description Security rules for favorite verses of a user.
+     * @path /users/{userId}/favoriteVerses/{favoriteVerseId}
+     * @allow (create) User with ID 'user123' can create a favorite verse.
+     *    - request.auth.uid: 'user123'
+     * @allow (get) User with ID 'user123' can read their favorite verse.
+     *    - request.auth.uid: 'user123'
+     * @allow (update) User with ID 'user123' can update their favorite verse.
+     *    - request.auth.uid: 'user123'
+     * @allow (delete) User with ID 'user123' can delete their favorite verse.
+     *    - request.auth.uid: 'user123'
+     * @deny (create) User with ID 'user456' cannot create favorite verse for 'user123'.
+     *    - request.auth.uid: 'user456'
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId}/favoriteVerses/{favoriteVerseId} {
+      // Allow the user to create a favorite verse.
+      allow create: if isSignedIn() && isOwner(userId);
+
+      // Allow the user to read their own favorite verse.
+      allow get: if isSignedIn() && isOwner(userId);
+
+      // Allow the user to update their own favorite verse.
+      allow update: if isExistingOwner(userId);
+
+      // Allow the user to delete their own favorite verse.
+      allow delete: if isExistingOwner(userId);
+
+      // Allow the user to list their own favorite verses.
+      allow list: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Security rules for Bible verses. Publicly readable.
+     * @path /verses/{verseId}
+     * @allow (get) Any user can read a verse.
+     *    - request.auth: null (or any user)
+     * @allow (list) Any user can list verses.
+     *    - request.auth: null (or any user)
+     * @deny (create) No one can create verses (prototype).
+     *    - request.auth: Any user
+     * @principle Public read access, restricted writes.
+     */
+    match /verses/{verseId} {
+      // Allow anyone to read a verse.
+      allow get, list: if true;
+
+      // No write permissions are granted in this prototype.
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Security rules for the verse of the day. Publicly readable.
+     * @path /dailyVerses/{date}
+     * @allow (get) Any user can read the daily verse.
+     *    - request.auth: null (or any user)
+     * @allow (list) Any user can list daily verses.
+     *    - request.auth: null (or any user)
+     * @deny (create) No one can create daily verses (prototype).
+     *    - request.auth: Any user
+     * @principle Public read access, restricted writes.
+     */
+    match /dailyVerses/{date} {
+      // Allow anyone to read the daily verse.
+      allow get, list: if true;
+
+      // No write permissions are granted in this prototype.
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Security rules for AI-powered reflections. Publicly readable.
+     * @path /reflections/{reflectionId}
+     * @allow (get) Any user can read a reflection.
+     *    - request.auth: null (or any user)
+     * @allow (list) Any user can list reflections.
+     *    - request.auth: null (or any user)
+     * @deny (create) No one can create reflections (prototype).
+     *    - request.auth: Any user
+     * @principle Public read access, restricted writes.
+     */
+    match /reflections/{reflectionId} {
+      // Allow anyone to read a reflection.
+      allow get, list: if true;
+
+      // No write permissions are granted in this prototype.
+      allow create, update, delete: if false;
+    }
+  }
+}
