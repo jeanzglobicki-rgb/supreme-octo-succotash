@@ -26,10 +26,6 @@ export default function Home() {
   }, []);
 
   const handleGetRandomVerse = useCallback(() => {
-    if (!isAuthenticated) {
-      // Optionally trigger sign-in flow
-      return;
-    }
     const newCount = randomClickCount + 1;
     setRandomClickCount(newCount);
 
@@ -39,7 +35,7 @@ export default function Home() {
       setCurrentVerse(getRandomVerse());
       setIsDaily(false);
     }
-  }, [randomClickCount, isAuthenticated]);
+  }, [randomClickCount]);
 
   const handleShowDailyVerse = () => {
     setCurrentVerse(getDailyVerse());
@@ -62,7 +58,6 @@ export default function Home() {
             <Button
               size="lg"
               onClick={handleGetRandomVerse}
-              disabled={!isAuthenticated}
               className="w-full sm:w-auto font-headline"
             >
               <RefreshCw className="mr-2 h-5 w-5" />
@@ -74,7 +69,7 @@ export default function Home() {
               </Button>
             )}
           </div>
-          {!isAuthenticated && <p className="text-center text-muted-foreground">Sign in to enable random verses and favorites.</p>}
+          {!isAuthenticated && <p className="text-center text-muted-foreground">Sign in to save your favorite verses.</p>}
         </div>
       </main>
       <AdBanner />
