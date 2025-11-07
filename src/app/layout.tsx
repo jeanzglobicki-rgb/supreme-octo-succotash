@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AppProvider } from '@/providers/app-provider';
@@ -5,11 +6,12 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { PwaInstaller } from '@/components/pwa-installer';
 
 export const metadata: Metadata = {
   title: 'Daily Script',
   description: 'Daily Bible Verses & Random Verse App',
-  manifest: '/api/manifest',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -20,17 +22,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/api/manifest" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Literata:opsz@7..72&display=swap" rel="stylesheet" />
-        <meta name="theme-color" content="#7c7bad" />
+        <meta name="theme-color" content="#3F51B5" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <FirebaseClientProvider>
             <AppProvider>
+              <PwaInstaller />
               {children}
               <Toaster />
               <FirebaseErrorListener />

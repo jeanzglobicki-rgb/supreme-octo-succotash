@@ -1,6 +1,5 @@
-
-import { collection, getDocs, getFirestore, limit, query } from "firebase/firestore";
-import { initializeFirebase } from "@/firebase";
+import { collection, getDocs, getFirestore, query } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 
 export interface Verse {
   book: string;
@@ -51,26 +50,27 @@ export const getDailyVerse = (): Verse => {
   return processedVerses[dayOfYear % processedVerses.length];
 };
 
+export const getRandomLocalVerse = (): Verse => {
+  const randomIndex = Math.floor(Math.random() * processedVerses.length);
+  return processedVerses[randomIndex];
+}
+
 export const getRandomVerse = async (): Promise<Verse> => {
-  // We'll use the local verses as a fallback if firestore fails
   try {
     const { firestore } = initializeFirebase();
     const versesCol = collection(firestore, 'verses');
     const q = query(versesCol);
     const snapshot = await getDocs(q);
     const allVerses = snapshot.docs.map(doc => doc.data() as Verse);
-    if (allVerses.length === 0) {
-        // fallback to local if firestore is empty
-        const randomIndex = Math.floor(Math.random() * processedVerses.length);
-        return processedVerses[randomIndex];
+    if (allVerses.length > 0) {
+      const randomIndex = Math.floor(Math.random() * allVerses.length);
+      return allVerses[randomIndex];
     }
-    const randomIndex = Math.floor(Math.random() * allVerses.length);
-    return allVerses[randomIndex];
   } catch (error) {
-    console.error("Could not fetch from firestore, using local verses", error);
-    const randomIndex = Math.floor(Math.random() * processedVerses.length);
-    return processedVerses[randomIndex];
+    console.error("Could not fetch from firestore, using local verses as fallback", error);
   }
+  // Fallback to local if firestore is empty or fails
+  return getRandomLocalVerse();
 };
 
 export const allVerses = processedVerses;

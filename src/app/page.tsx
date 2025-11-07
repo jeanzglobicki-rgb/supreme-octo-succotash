@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getDailyVerse, getRandomVerse, type Verse } from '@/lib/verses';
+import { getDailyVerse, getRandomVerse, getRandomLocalVerse, type Verse } from '@/lib/verses';
 import Header from '@/components/layout/header';
 import VerseCard from '@/components/verse/verse-card';
 import AdBanner from '@/components/ads/ad-banner';
@@ -26,12 +26,14 @@ export default function Home() {
   const [reflectionError, setReflectionError] = useState<string | null>(null);
 
   useEffect(() => {
+    // getDailyVerse is synchronous and uses local data, safe for useEffect
     const verse = getDailyVerse();
     setCurrentVerse(verse);
     setReflection(null); // Clear reflection when verse changes
   }, []);
 
   const handleGetRandomVerse = useCallback(async () => {
+    // We now call the async getRandomVerse which can be remote or local
     const verse = await getRandomVerse();
     setReflection(null); // Clear reflection when verse changes
     setReflectionError(null);
@@ -53,7 +55,9 @@ export default function Home() {
 
   const handleInterstitialClose = async () => {
     setShowInterstitial(false);
-    const verse = await getRandomVerse();
+    // Use getRandomLocalVerse here for a synchronous update after the ad,
+    // as getRandomVerse() is async and might feel slow.
+    const verse = getRandomLocalVerse();
     setCurrentVerse(verse);
   };
 
