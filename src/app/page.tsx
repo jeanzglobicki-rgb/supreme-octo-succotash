@@ -2,7 +2,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getDailyVerse, getRandomVerse, getRandomLocalVerse, type Verse } from '@/lib/verses';
+import { getDailyVerse, getRandomLocalVerse, type Verse } from '@/lib/verses';
+import { getRandomVerse } from '@/lib/verse-actions';
 import Header from '@/components/layout/header';
 import VerseCard from '@/components/verse/verse-card';
 import AdBanner from '@/components/ads/ad-banner';
