@@ -17,7 +17,7 @@ import React from 'react';
 
 interface VerseCardProps {
   verse: Verse;
-  onGetReflection: () => void;
+  onGetReflection?: () => void;
 }
 
 export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
@@ -44,7 +44,7 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
   };
 
   const handleShare = () => {
-    const verseRefUrl = verse.reference.replace(/\s+/g, '-').toLowerCase();
+    const verseRefUrl = verse.reference.replace(/[\s:]+/g, '-').toLowerCase();
     const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
     const shareText = `"${verse.text}" - ${verse.reference}`;
 
@@ -105,15 +105,17 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
           >
             <Share2 className="h-7 w-7 text-accent" />
           </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            onClick={onGetReflection}
-            aria-label="Get AI Reflection"
-            className="h-12 w-12"
-          >
-            <Sparkles className="h-7 w-7 text-accent" />
-          </Button>
+          {onGetReflection && (
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={onGetReflection}
+              aria-label="Get AI Reflection"
+              className="h-12 w-12"
+            >
+              <Sparkles className="h-7 w-7 text-accent" />
+            </Button>
+          )}
       </CardFooter>
     </Card>
   );

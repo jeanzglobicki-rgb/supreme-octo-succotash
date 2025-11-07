@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
 function findVerseByReference(ref: string): Verse | undefined {
-  const decodedRef = ref.replace(/-/g, ' ');
+  const decodedRef = ref.replace(/-/g, ' ').replace(/:/g, ':');
   return allVerses.find((v) => v.reference.toLowerCase() === decodedRef.toLowerCase());
 }
 
@@ -24,7 +24,7 @@ export default function VersePage() {
 
   useEffect(() => {
     if (typeof reference === 'string' && reference) {
-      const foundVerse = findVerseByReference(reference.replace(/ /g, '-'));
+      const foundVerse = findVerseByReference(reference);
       setVerse(foundVerse);
     }
     setLoading(false);
