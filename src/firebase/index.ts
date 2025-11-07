@@ -4,7 +4,8 @@ import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import firebaseConfig from './config';
 
-import { FirebaseProvider, FirebaseClientProvider, useFirebaseApp, useAuth, useFirestore, getFirebase } from './provider';
+import { FirebaseProvider, useFirebaseApp, useAuth, useFirestore, getFirebase } from './provider';
+import FirebaseClientProvider from './client-provider';
 import { useCollection } from './firestore/use-collection';
 import { useDoc } from './firestore/use-doc';
 import { useUser } from './auth/use-user';

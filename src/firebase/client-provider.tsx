@@ -13,11 +13,11 @@ type FirebaseInstances = {
   firestore: Firestore;
 };
 
-export const FirebaseClientProvider = ({
+export default function FirebaseClientProvider({
   children,
 }: {
   children: ReactNode;
-}) => {
+}) {
   const [firebase, setFirebase] = useState<FirebaseInstances | null>(null);
   useEffect(() => {
     const instances = initializeFirebase();

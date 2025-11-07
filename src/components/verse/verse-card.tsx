@@ -19,7 +19,6 @@ import { Heart, Share2, Copy, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/hooks/use-app';
 import type { Verse } from '@/lib/verses';
-import Reflection from './reflection';
 import { useUser } from '@/firebase';
 
 interface VerseCardProps {
@@ -90,9 +89,6 @@ export default function VerseCard({ verse }: VerseCardProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {isAuthenticated && (
-          <Reflection verseText={verse.text} verseReference={verse.reference} />
-        )}
       </CardFooter>
     </Card>
   );
