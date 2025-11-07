@@ -11,7 +11,7 @@ import { RefreshCw } from 'lucide-react';
 import { useApp } from '@/hooks/use-app';
 import { useUser } from '@/firebase';
 
-const INTERSTITIAL_AD_FREQUENCY = 3;
+const INTERSTITIAL_AD_FREQUENCY = 10;
 
 export default function Home() {
   const { user } = useUser();
