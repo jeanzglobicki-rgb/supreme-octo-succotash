@@ -43,39 +43,6 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
     }
   };
 
-  const handleShare = () => {
-    const verseRefUrl = verse.reference.replace(/\s+/g, '-').toLowerCase();
-    const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
-    const shareText = `"${verse.text}" - ${verse.reference}`;
-
-    if (navigator.share) {
-      navigator.share({
-        title: 'Daily Script Verse',
-        text: shareText,
-        url: shareUrl,
-      })
-      .catch((error) => {
-        // Catch errors like the user dismissing the share sheet
-        if (error.name !== 'AbortError') {
-          console.error('Share failed:', error);
-          // Fallback to copy for other errors
-          navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-          toast({
-            title: 'Link Copied',
-            description: 'Sharing failed, so we copied the verse and link to your clipboard.',
-          });
-        }
-      });
-    } else {
-      // Fallback for browsers that don't support navigator.share
-      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-      toast({
-        title: 'Link Copied',
-        description: 'Sharing not supported, so we copied the verse and link to your clipboard.',
-      });
-    }
-  };
-
   return (
     <Card className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
@@ -101,7 +68,36 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
           <Button
             variant="ghost"
             size="lg"
-            onClick={handleShare}
+            onClick={() => {
+              const verseRefUrl = verse.reference.replace(/\s+/g, '-').toLowerCase();
+              const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
+              const shareText = `"${verse.text}" - ${verse.reference}`;
+          
+              if (navigator.share) {
+                navigator.share({
+                  title: 'Daily Script Verse',
+                  text: shareText,
+                  url: shareUrl,
+                }).catch((error) => {
+                  if (error.name !== 'AbortError') {
+                    console.error('Share failed:', error);
+                    // Fallback to copy for other errors
+                    navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+                    toast({
+                      title: 'Link Copied',
+                      description: 'Sharing failed, so we copied the verse and link to your clipboard.',
+                    });
+                  }
+                });
+              } else {
+                // Fallback for browsers that don't support navigator.share
+                navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+                toast({
+                  title: 'Link Copied',
+                  description: 'Sharing not supported, so we copied the verse and link to your clipboard.',
+                });
+              }
+            }}
             aria-label="Share"
             className="h-12 w-12"
           >
