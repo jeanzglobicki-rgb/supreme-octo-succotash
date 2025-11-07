@@ -57,12 +57,12 @@ export default function VerseCard({ verse, onGetReflection }: VerseCardProps) {
           url: shareUrl,
         });
       } catch (error) {
-        // Catch any error, not just AbortError
-        console.error('Share failed, falling back to clipboard:', error);
+        // Catch any error, not just AbortError, and fallback to clipboard
+        console.error('Web Share API failed, falling back to clipboard:', error);
         navigator.clipboard.writeText(clipboardText);
         toast({
           title: 'Link Copied',
-          description: 'Sharing was not successful, so we copied the verse to your clipboard.',
+          description: 'Sharing was not available, so we copied the verse to your clipboard.',
         });
       }
     } else {
