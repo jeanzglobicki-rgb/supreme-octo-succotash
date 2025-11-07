@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import {
-  signInWithPopup,
   GoogleAuthProvider,
   signInAnonymously,
+  signInWithRedirect,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 import {
@@ -45,18 +45,21 @@ export function UserNav() {
   const [showSignInDialog, setShowSignInDialog] = useState(false);
   const [showFavoritesSheet, setShowFavoritesSheet] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   const handleSignIn = async (providerName: 'google' | 'anonymous') => {
     if (!auth) return;
-    setShowSignInDialog(false);
+    setIsSigningIn(true);
     try {
       if (providerName === 'google') {
         const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
+        // Use signInWithRedirect for a mobile-friendly experience
+        await signInWithRedirect(auth, provider);
       } else if (providerName === 'anonymous') {
         await signInAnonymously(auth);
+        toast({ title: 'Successfully signed in!' });
+        setShowSignInDialog(false);
       }
-      toast({ title: 'Successfully signed in!' });
     } catch (error) {
       console.error('Sign in error:', error);
       toast({
@@ -64,7 +67,9 @@ export function UserNav() {
         title: 'Uh oh! Something went wrong.',
         description: 'There was a problem with your sign in.',
       });
+      setIsSigningIn(false);
     }
+    // For redirect, isSigningIn will remain true until the page reloads
   };
 
   const handleSignOut = async () => {
@@ -82,7 +87,7 @@ export function UserNav() {
     }
   };
   
-  const isLoading = userLoading || isRedirectLoading;
+  const isLoading = userLoading || isRedirectLoading || isSigningIn;
 
   if (isLoading) {
     return (

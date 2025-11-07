@@ -9,7 +9,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { Auth, getRedirectResult } from 'firebase/auth';
+import { Auth, getRedirectResult, User } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export interface AppContextType {
   favorites: (Verse & {id: string})[];
@@ -29,17 +30,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const firestore = useFirestore();
   const auth = useAuth();
+  const { toast } = useToast();
   const [isRedirectLoading, setIsRedirectLoading] = useState(true);
 
   useEffect(() => {
     if (auth) {
       getRedirectResult(auth)
         .then((result) => {
-          // result will be null if there's no redirect to process
-          // if it's not null, onAuthStateChanged in useUser will handle the user state update
+          if (result) {
+            // This is the signed-in user
+            const user = result.user;
+            toast({
+              title: "Signed in successfully!",
+              description: `Welcome back, ${user.displayName || 'friend'}.`,
+            });
+          }
         })
         .catch((error) => {
           console.error("Error processing redirect result:", error);
+          toast({
+            variant: "destructive",
+            title: "Sign in failed",
+            description: "There was a problem signing you in. Please try again.",
+          });
         })
         .finally(() => {
           setIsRedirectLoading(false);
@@ -47,7 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else {
         setIsRedirectLoading(false);
     }
-  }, [auth]);
+  }, [auth, toast]);
 
 
   // User document hook
