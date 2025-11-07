@@ -67,9 +67,12 @@ export function UserNav() {
         title: 'Uh oh! Something went wrong.',
         description: 'There was a problem with your sign in.',
       });
-      setIsSigningIn(false);
+    } finally {
+      // isSigningIn will remain true for redirect, which is what we want
+      if (providerName === 'anonymous') {
+        setIsSigningIn(false);
+      }
     }
-    // For redirect, isSigningIn will remain true until the page reloads
   };
 
   const handleSignOut = async () => {
