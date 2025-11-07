@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
   signInAnonymously,
   signOut as firebaseSignOut,
@@ -29,7 +29,7 @@ import {
   DialogTitle,
   DialogDescription
 } from '@/components/ui/dialog';
-import { useUser, useAuth, useFirebaseApp } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import { User, LogIn, Heart, Settings, LogOut, BookOpen, UserCircle } from 'lucide-react';
 
 import FavoritesSheet from '@/components/verse/favorites-sheet';
@@ -50,11 +50,11 @@ export function UserNav() {
     try {
       if (providerName === 'google') {
         const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
+        await signInWithRedirect(auth, provider); // Use redirect for mobile-friendliness
       } else if (providerName === 'anonymous') {
         await signInAnonymously(auth);
+        toast({ title: 'Successfully signed in!' });
       }
-      toast({ title: 'Successfully signed in!' });
     } catch (error) {
       console.error('Sign in error:', error);
       toast({
