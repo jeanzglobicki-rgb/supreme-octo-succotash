@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Home } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
 function findVerseByReference(ref: string): Verse | undefined {
   const decodedRef = ref.replace(/-/g, ' ');
@@ -67,9 +68,3 @@ export default function VersePage() {
     </div>
   );
 }
-
-// Add dummy components to avoid breaking on Skeleton usage
-const Card = ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>;
-const CardHeader = ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>;
-const CardContent = ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>;
-const CardFooter = ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>;

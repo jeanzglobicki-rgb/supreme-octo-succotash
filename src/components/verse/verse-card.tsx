@@ -3,7 +3,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -40,6 +39,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
           url: shareUrl,
         });
       } catch (error) {
+        // This can happen if the user dismisses the share sheet, so we don't need to show an error.
         console.log('Share dismissed or failed:', error);
       }
     } else {
@@ -74,7 +74,6 @@ export default function VerseCard({ verse }: VerseCardProps) {
         <CardTitle className="font-headline text-3xl flex items-center gap-3">
           {verse.reference}
         </CardTitle>
-        <CardDescription>King James Version</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-2xl font-body leading-relaxed text-foreground/90">
@@ -94,7 +93,7 @@ export default function VerseCard({ verse }: VerseCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleShare}
+            onClick={() => handleShare()}
             aria-label="Share"
           >
             <Share2 className="h-6 w-6 text-accent" />
