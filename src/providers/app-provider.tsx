@@ -2,13 +2,14 @@
 
 import { createContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { type Verse } from '@/lib/verses';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import {
   collection,
   doc,
   serverTimestamp,
 } from 'firebase/firestore';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Auth, getRedirectResult } from 'firebase/auth';
 
 export interface AppContextType {
   favorites: (Verse & {id: string})[];
@@ -19,6 +20,7 @@ export interface AppContextType {
   upgradeToPremium: () => Promise<void>;
   notificationPreference: string;
   setNotificationPreference: (preference: 'daily' | 'off') => void;
+  isRedirectLoading: boolean;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -26,6 +28,27 @@ export const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const firestore = useFirestore();
+  const auth = useAuth();
+  const [isRedirectLoading, setIsRedirectLoading] = useState(true);
+
+  useEffect(() => {
+    if (auth) {
+      getRedirectResult(auth)
+        .then((result) => {
+          // result will be null if there's no redirect to process
+          // if it's not null, onAuthStateChanged in useUser will handle the user state update
+        })
+        .catch((error) => {
+          console.error("Error processing redirect result:", error);
+        })
+        .finally(() => {
+          setIsRedirectLoading(false);
+        });
+    } else {
+        setIsRedirectLoading(false);
+    }
+  }, [auth]);
+
 
   // User document hook
   const userDocRef = useMemoFirebase(() => {
@@ -92,6 +115,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     upgradeToPremium,
     notificationPreference,
     setNotificationPreference,
+    isRedirectLoading
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

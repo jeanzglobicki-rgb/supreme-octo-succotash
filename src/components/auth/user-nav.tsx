@@ -30,14 +30,16 @@ import {
   DialogDescription
 } from '@/components/ui/dialog';
 import { useUser, useAuth } from '@/firebase';
-import { User, LogIn, Heart, Settings, LogOut, BookOpen, UserCircle } from 'lucide-react';
+import { User, LogIn, Heart, Settings, LogOut, BookOpen, UserCircle, Loader2 } from 'lucide-react';
 
 import FavoritesSheet from '@/components/verse/favorites-sheet';
 import SettingsDialog from '@/components/settings-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useApp } from '@/hooks/use-app';
 
 export function UserNav() {
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
+  const { isRedirectLoading } = useApp();
   const auth = useAuth();
   const {toast} = useToast();
   const [showSignInDialog, setShowSignInDialog] = useState(false);
@@ -79,7 +81,16 @@ export function UserNav() {
       });
     }
   };
+  
+  const isLoading = userLoading || isRedirectLoading;
 
+  if (isLoading) {
+    return (
+      <Button disabled variant="ghost" size="icon">
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </Button>
+    )
+  }
 
   if (!user) {
     return (
