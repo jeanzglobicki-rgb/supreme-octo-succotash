@@ -9,7 +9,7 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 export const metadata: Metadata = {
   title: 'Daily Script',
   description: 'Daily Bible Verses & Random Verse App',
-  manifest: '/manifest.json',
+  manifest: '/api/manifest',
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/api/manifest" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Literata:opsz@7..72&display=swap" rel="stylesheet" />
