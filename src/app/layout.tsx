@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import { FirebaseClientProvider } from '@/firebase';
 import { AppProvider } from '@/providers/app-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
   title: 'Daily Script',
@@ -23,10 +25,13 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AppProvider>
-            {children}
-            <Toaster />
-          </AppProvider>
+          <FirebaseClientProvider>
+            <AppProvider>
+              {children}
+              <Toaster />
+              <FirebaseErrorListener />
+            </AppProvider>
+          </FirebaseClientProvider>
         </ThemeProvider>
       </body>
     </html>

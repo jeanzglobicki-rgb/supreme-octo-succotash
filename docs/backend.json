@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Verse": {
+      "title": "Verse",
+      "description": "Represents a Bible verse.",
+      "type": "object",
+      "properties": {
+        "book": {
+          "type": "string",
+          "description": "The book of the Bible."
+        },
+        "chapter": {
+          "type": "number",
+          "description": "The chapter number."
+        },
+        "verse": {
+          "type": "number",
+          "description": "The verse number."
+        },
+        "text": {
+          "type": "string",
+          "description": "The text of the verse."
+        },
+        "reference": {
+          "type": "string",
+          "description": "The reference of the verse (e.g., John 3:16)."
+        }
+      },
+      "required": ["book", "chapter", "verse", "text", "reference"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous", "google.com"]
+  },
+  "firestore": {
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": {
+        "$ref": "#/entities/Verse"
+      },
+      "description": "Stores a user's favorite verses."
+    }
+  }
+}

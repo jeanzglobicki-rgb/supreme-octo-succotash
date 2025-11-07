@@ -1,5 +1,4 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {run} from '@genkit-ai/next';
 import { generateReflectionFlow } from '@/ai/flows/reflection';
 
 export async function POST(req: NextRequest) {
@@ -10,7 +9,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const reflection = await run(generateReflectionFlow, { verse });
+    const reflection = await generateReflectionFlow({ verse });
     return NextResponse.json({ reflection });
   } catch (error) {
     console.error('Error generating reflection:', error);

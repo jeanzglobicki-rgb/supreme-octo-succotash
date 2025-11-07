@@ -1,82 +1,81 @@
 'use client';
 
-import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { type Verse } from '@/lib/verses';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import {
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface AppContextType {
-  isAuthenticated: boolean;
-  signIn: (method: 'anonymous' | 'google' | 'apple') => void;
-  signOut: () => void;
-  favorites: Verse[];
+  favorites: (Verse & {id: string})[];
   toggleFavorite: (verse: Verse) => void;
   isFavorite: (verseReference: string) => boolean;
+  favoritesLoading: boolean;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const FAVORITES_STORAGE_KEY = 'daily-script-favorites';
-
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [favorites, setFavorites] = useState<Verse[]>([]);
+  const { user } = useUser();
+  const firestore = useFirestore();
 
-  useEffect(() => {
-    // Check for auth state in local storage (mock)
-    const storedAuth = localStorage.getItem('daily-script-auth');
-    if (storedAuth === 'true') {
-      setIsAuthenticated(true);
-    }
-    
-    // Load favorites from local storage
-    try {
-      const storedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
-      if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites));
-      }
-    } catch (error) {
-      console.error('Could not parse favorites from localStorage', error);
-      setFavorites([]);
-    }
-  }, []);
+  const favoritesQuery = useMemoFirebase(() => {
+      if (!user || !firestore) return null;
+      return collection(firestore, 'users', user.uid, 'favorites');
+  }, [user, firestore]);
 
-  const signIn = (method: 'anonymous' | 'google' | 'apple') => {
-    // Mock sign-in
-    localStorage.setItem('daily-script-auth', 'true');
-    setIsAuthenticated(true);
-    console.log(`Signed in with ${method}`);
-  };
+  const { data: favorites, loading: favoritesLoading } = useCollection(favoritesQuery);
 
-  const signOut = () => {
-    // Mock sign-out
-    localStorage.removeItem('daily-script-auth');
-    setIsAuthenticated(false);
-  };
-  
   const toggleFavorite = useCallback((verse: Verse) => {
-    setFavorites(prevFavorites => {
-      const isAlreadyFavorite = prevFavorites.some(fav => fav.reference === verse.reference);
-      let updatedFavorites;
-      if (isAlreadyFavorite) {
-        updatedFavorites = prevFavorites.filter(fav => fav.reference !== verse.reference);
-      } else {
-        updatedFavorites = [...prevFavorites, verse];
+    if (!user || !firestore) return;
+
+    const favoritesCol = collection(firestore, 'users', user.uid, 'favorites');
+    const isAlreadyFavorite = favorites?.some(fav => fav.reference === verse.reference);
+    
+    if (isAlreadyFavorite) {
+      const favoriteDoc = favorites?.find(fav => fav.reference === verse.reference);
+      if (favoriteDoc?.id) {
+          const docRef = doc(favoritesCol, favoriteDoc.id);
+          deleteDoc(docRef).catch(err => {
+              const permissionError = new FirestorePermissionError({
+                  path: docRef.path,
+                  operation: 'delete'
+              }, err);
+              errorEmitter.emit('permission-error', permissionError);
+          });
       }
-      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(updatedFavorites));
-      return updatedFavorites;
-    });
-  }, []);
+    } else {
+        const docRef = doc(favoritesCol, verse.reference.replace(/[\s:]+/g, '-'));
+        setDoc(docRef, {
+            ...verse,
+            createdAt: serverTimestamp()
+        }).catch(err => {
+            const permissionError = new FirestorePermissionError({
+                  path: docRef.path,
+                  operation: 'create',
+                  requestResourceData: verse,
+              }, err);
+              errorEmitter.emit('permission-error', permissionError);
+        });
+    }
+  }, [user, firestore, favorites]);
 
   const isFavorite = useCallback((verseReference: string) => {
-    return favorites.some(fav => fav.reference === verseReference);
+    return favorites?.some(fav => fav.reference === verseReference) || false;
   }, [favorites]);
 
   const value = {
-    isAuthenticated,
-    signIn,
-    signOut,
-    favorites,
+    favorites: favorites || [],
     toggleFavorite,
     isFavorite,
+    favoritesLoading,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

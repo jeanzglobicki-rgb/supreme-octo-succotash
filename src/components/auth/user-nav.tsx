@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import {
+  signInWithPopup,
+  GoogleAuthProvider,
+  signInAnonymously,
+  signOut as firebaseSignOut,
+} from 'firebase/auth';
+import {
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -23,19 +29,59 @@ import {
   DialogTitle,
   DialogDescription
 } from '@/components/ui/dialog';
-import { useApp } from '@/hooks/use-app';
-import { User, LogIn, Heart, Settings, LogOut, Bookmark, BookOpen } from 'lucide-react';
+import { useUser, useAuth, useFirebaseApp } from '@/firebase';
+import { User, LogIn, Heart, Settings, LogOut, BookOpen, UserCircle } from 'lucide-react';
 
 import FavoritesSheet from '@/components/verse/favorites-sheet';
 import SettingsDialog from '@/components/settings-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export function UserNav() {
-  const { isAuthenticated, signIn, signOut } = useApp();
+  const { user } = useUser();
+  const auth = useAuth();
+  const {toast} = useToast();
   const [showSignInDialog, setShowSignInDialog] = useState(false);
   const [showFavoritesSheet, setShowFavoritesSheet] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
-  if (!isAuthenticated) {
+  const handleSignIn = async (providerName: 'google' | 'anonymous') => {
+    if (!auth) return;
+    setShowSignInDialog(false);
+    try {
+      if (providerName === 'google') {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      } else if (providerName === 'anonymous') {
+        await signInAnonymously(auth);
+      }
+      toast({ title: 'Successfully signed in!' });
+    } catch (error) {
+      console.error('Sign in error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: 'There was a problem with your sign in.',
+      });
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (!auth) return;
+    try {
+      await firebaseSignOut(auth);
+      toast({ title: 'Successfully signed out.' });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: 'There was a problem with your sign out.',
+      });
+    }
+  };
+
+
+  if (!user) {
     return (
       <>
         <Button onClick={() => setShowSignInDialog(true)}>
@@ -51,9 +97,8 @@ export function UserNav() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <Button onClick={() => { signIn('google'); setShowSignInDialog(false); }} variant="outline">Sign in with Google</Button>
-              <Button onClick={() => { signIn('apple'); setShowSignInDialog(false); }} variant="outline">Sign in with Apple</Button>
-              <Button onClick={() => { signIn('anonymous'); setShowSignInDialog(false); }}>Continue Anonymously</Button>
+              <Button onClick={() => handleSignIn('google')} variant="outline">Sign in with Google</Button>
+              <Button onClick={() => handleSignIn('anonymous')}>Continue Anonymously</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -67,9 +112,9 @@ export function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src="/avatars/01.png" alt="@user" />
+              <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
               <AvatarFallback>
-                <User />
+                {user.isAnonymous ? <UserCircle/> : (user.displayName?.charAt(0) || <User />)}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -77,9 +122,9 @@ export function UserNav() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">Signed In</p>
+              <p className="text-sm font-medium leading-none">{user.isAnonymous ? "Anonymous User" : (user.displayName || 'Signed In')}</p>
               <p className="text-xs leading-none text-muted-foreground">
-                Enjoy your daily inspiration!
+                 {user.isAnonymous ? "Sign up to sync favorites" : (user.email || 'Enjoy your daily inspiration!')}
               </p>
             </div>
           </DropdownMenuLabel>
@@ -99,7 +144,7 @@ export function UserNav() {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={signOut}>
+          <DropdownMenuItem onSelect={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Sign out</span>
           </DropdownMenuItem>

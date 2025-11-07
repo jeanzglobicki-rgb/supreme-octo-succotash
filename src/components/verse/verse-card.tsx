@@ -15,11 +15,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, Share2, Copy, Sparkles, BookOpen } from 'lucide-react';
+import { Heart, Share2, Copy, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/hooks/use-app';
 import type { Verse } from '@/lib/verses';
 import Reflection from './reflection';
+import { useUser } from '@/firebase';
 
 interface VerseCardProps {
   verse: Verse;
@@ -27,7 +28,9 @@ interface VerseCardProps {
 
 export default function VerseCard({ verse }: VerseCardProps) {
   const { toast } = useToast();
-  const { isAuthenticated, toggleFavorite, isFavorite } = useApp();
+  const { user } = useUser();
+  const isAuthenticated = !!user;
+  const { toggleFavorite, isFavorite } = useApp();
   const isVerseFavorite = isFavorite(verse.reference);
 
   const handleCopy = () => {

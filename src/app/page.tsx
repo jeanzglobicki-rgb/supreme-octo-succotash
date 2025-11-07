@@ -9,11 +9,13 @@ import InterstitialAd from '@/components/ads/interstitial-ad';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useApp } from '@/hooks/use-app';
+import { useUser } from '@/firebase';
 
 const INTERSTITIAL_AD_FREQUENCY = 3;
 
 export default function Home() {
-  const { isAuthenticated } = useApp();
+  const { user } = useUser();
+  const isAuthenticated = !!user;
   const [currentVerse, setCurrentVerse] = useState<Verse | null>(null);
   const [isDaily, setIsDaily] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);

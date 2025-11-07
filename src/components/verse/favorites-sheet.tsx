@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useApp } from '@/hooks/use-app';
 import { Heart, Trash2 } from 'lucide-react';
+import { Skeleton } from '../ui/skeleton';
 
 interface FavoritesSheetProps {
   open: boolean;
@@ -19,7 +20,7 @@ interface FavoritesSheetProps {
 }
 
 export default function FavoritesSheet({ open, onOpenChange }: FavoritesSheetProps) {
-  const { favorites, toggleFavorite } = useApp();
+  const { favorites, toggleFavorite, favoritesLoading } = useApp();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -35,7 +36,18 @@ export default function FavoritesSheet({ open, onOpenChange }: FavoritesSheetPro
         </SheetHeader>
         <div className="flex-grow overflow-hidden">
           <ScrollArea className="h-full pr-4">
-            {favorites.length > 0 ? (
+            {favoritesLoading ? (
+                 <div className="space-y-4 py-4">
+                    <div className="p-4 border rounded-lg space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </div>
+                     <div className="p-4 border rounded-lg space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </div>
+                 </div>
+            ) : favorites.length > 0 ? (
               <div className="space-y-4 py-4">
                 {favorites.map((verse) => (
                   <div key={verse.reference} className="group relative p-4 border rounded-lg bg-card/50 hover:bg-card transition-colors">
