@@ -103,11 +103,9 @@ export default function Home() {
               <RefreshCw className="mr-2 h-5 w-5" />
               Get a Random Verse
             </Button>
-            {!isDaily && (
-              <Button size="lg" variant="outline" onClick={handleShowDailyVerse} className="w-full sm:w-auto font-headline">
-                Back to Daily Verse
-              </Button>
-            )}
+            <Button size="lg" variant="outline" onClick={handleShowDailyVerse} className={`w-full sm:w-auto font-headline transition-opacity duration-300 ${isDaily ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+              Back to Daily Verse
+            </Button>
           </div>
           {!isAuthenticated && <p className="text-center text-muted-foreground">Sign in to save your favorite verses.</p>}
         </div>
