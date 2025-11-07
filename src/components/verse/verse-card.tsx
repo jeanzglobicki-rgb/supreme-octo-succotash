@@ -27,24 +27,27 @@ export default function VerseCard({ verse }: VerseCardProps) {
   const { toggleFavorite, isFavorite } = useApp();
   const isVerseFavorite = isFavorite(verse.reference);
 
-  const shareText = `"${verse.text}" - ${verse.reference}`;
-
   const handleShare = async () => {
+    const verseRefUrl = verse.reference.replace(/\s+/g, '-').toLowerCase();
+    const shareUrl = `${window.location.origin}/verse/${verseRefUrl}`;
+    const shareText = `"${verse.text}" - ${verse.reference}`;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'Daily Script Verse',
           text: shareText,
+          url: shareUrl,
         });
       } catch (error) {
         console.log('Share dismissed or failed:', error);
       }
     } else {
       // Fallback for browsers that don't support navigator.share
-      navigator.clipboard.writeText(shareText);
+      navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       toast({
-        title: 'Share not supported',
-        description: 'Your browser does not support native sharing. Verse copied to clipboard instead.',
+        title: 'Link Copied',
+        description: 'Sharing not supported, so we copied the verse and link to your clipboard.',
       });
     }
   };
@@ -56,6 +59,12 @@ export default function VerseCard({ verse }: VerseCardProps) {
         title: isVerseFavorite ? 'Removed from favorites' : 'Added to favorites',
         description: verse.reference,
       });
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Sign in to save favorites",
+            description: "Please create an account to save your favorite verses."
+        });
     }
   };
 
@@ -78,7 +87,6 @@ export default function VerseCard({ verse }: VerseCardProps) {
             variant="ghost"
             size="icon"
             onClick={handleFavoriteToggle}
-            disabled={!isAuthenticated}
             aria-label="Favorite"
           >
             <Heart className={`h-6 w-6 ${isVerseFavorite ? 'fill-red-500 text-red-500' : 'text-accent'}`} />
