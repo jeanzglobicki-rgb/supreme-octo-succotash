@@ -8,31 +8,32 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the User entity."
+          "description": "Unique identifier for the user."
         },
         "authProvider": {
           "type": "string",
           "description": "The authentication provider used by the user (e.g., Google, Apple, anonymous)."
         },
-        "notificationPreferences": {
+        "email": {
           "type": "string",
-          "description": "User preferences for push notifications (e.g., daily, off)."
+          "description": "The user's email address, if provided.",
+          "format": "email"
         },
-        "bibleVersionPreference": {
+        "creationDate": {
           "type": "string",
-          "description": "User's preferred Bible version (e.g., KJV, NIV, ESV)."
+          "description": "The date and time the user account was created.",
+          "format": "date-time"
         },
-        "darkModePreference": {
-          "type": "boolean",
-          "description": "User preference for dark mode."
-        },
-        "isPremium": {
-          "type": "boolean",
-          "description": "Indicates if the user has paid to remove ads."
+        "settingsId": {
+          "type": "string",
+          "description": "Reference to UserSettings. (Relationship: User 1:1 UserSettings)"
         }
       },
       "required": [
-        "id"
+        "id",
+        "authProvider",
+        "creationDate",
+        "settingsId"
       ]
     },
     "Verse": {
@@ -43,47 +44,47 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Verse entity."
-        },
-        "text": {
-          "type": "string",
-          "description": "The text of the Bible verse."
+          "description": "Unique identifier for the verse."
         },
         "book": {
           "type": "string",
-          "description": "The book of the Bible the verse is from (e.g., Genesis)."
+          "description": "The book of the Bible the verse is from."
         },
         "chapter": {
           "type": "number",
-          "description": "The chapter number the verse is from."
+          "description": "The chapter number of the verse."
         },
         "verseNumber": {
           "type": "number",
           "description": "The verse number within the chapter."
         },
-        "bibleVersion": {
+        "text": {
           "type": "string",
-          "description": "The Bible version the verse is from (e.g., KJV, NIV, ESV)."
+          "description": "The text of the Bible verse."
+        },
+        "version": {
+          "type": "string",
+          "description": "The Bible version of the verse (e.g., KJV, NIV, ESV)."
         }
       },
       "required": [
         "id",
-        "text",
         "book",
         "chapter",
         "verseNumber",
-        "bibleVersion"
+        "text",
+        "version"
       ]
     },
     "FavoriteVerse": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "FavoriteVerse",
       "type": "object",
-      "description": "Represents a Bible verse favorited by a user.",
+      "description": "Represents a verse that a user has marked as a favorite.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the FavoriteVerse entity."
+          "description": "Unique identifier for the favorite verse entry."
         },
         "userId": {
           "type": "string",
@@ -93,9 +94,9 @@
           "type": "string",
           "description": "Reference to Verse. (Relationship: Verse 1:N FavoriteVerse)"
         },
-        "dateAdded": {
+        "addedDate": {
           "type": "string",
-          "description": "The date the verse was added to favorites.",
+          "description": "The date and time the verse was added to favorites.",
           "format": "date-time"
         }
       },
@@ -103,7 +104,7 @@
         "id",
         "userId",
         "verseId",
-        "dateAdded"
+        "addedDate"
       ]
     },
     "DailyVerse": {
@@ -114,11 +115,11 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the DailyVerse entity."
+          "description": "Unique identifier for the daily verse entry."
         },
         "verseId": {
           "type": "string",
-          "description": "Reference to Verse. (Relationship: Verse 1:N DailyVerse)"
+          "description": "Reference to Verse. (Relationship: Verse 1:1 DailyVerse)"
         },
         "date": {
           "type": "string",
@@ -132,43 +133,41 @@
         "date"
       ]
     },
-    "Reflection": {
+    "UserSettings": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Reflection",
+      "title": "UserSettings",
       "type": "object",
-      "description": "Represents an AI-powered reflection on a Bible verse.",
+      "description": "Stores the user's preferences for the app.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Reflection entity."
+          "description": "Unique identifier for the user settings."
         },
-        "verseId": {
+        "bibleVersion": {
           "type": "string",
-          "description": "Reference to Verse. (Relationship: Verse 1:N Reflection)"
+          "description": "The user's preferred Bible version (e.g., KJV, NIV, ESV)."
         },
-        "reflectionText": {
-          "type": "string",
-          "description": "The text of the AI-powered reflection."
+        "darkModeEnabled": {
+          "type": "boolean",
+          "description": "Indicates whether dark mode is enabled."
         },
-        "dateCreated": {
-          "type": "string",
-          "description": "The date the reflection was created.",
-          "format": "date-time"
+        "notificationsEnabled": {
+          "type": "boolean",
+          "description": "Indicates whether daily notifications are enabled."
         }
       },
       "required": [
         "id",
-        "verseId",
-        "reflectionText",
-        "dateCreated"
+        "bibleVersion",
+        "darkModeEnabled",
+        "notificationsEnabled"
       ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous",
-      "google.com"
+      "anonymous"
     ]
   },
   "firestore": {
@@ -180,11 +179,31 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profile data. Path-based ownership ensures only the user can access their own data.",
+          "description": "Stores user profile information. Uses path-based ownership for security.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user."
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/settings/{settingsId}",
+        "definition": {
+          "entityName": "UserSettings",
+          "schema": {
+            "$ref": "#/backend/entities/UserSettings"
+          },
+          "description": "Stores user-specific settings. Uses path-based ownership for security.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "settingsId",
+              "description": "The unique identifier for the user settings document. It should match the userId."
             }
           ]
         }
@@ -196,15 +215,15 @@
           "schema": {
             "$ref": "#/backend/entities/FavoriteVerse"
           },
-          "description": "Stores verses favorited by a user. Path-based ownership ensures only the user can access their own favorited verses.",
+          "description": "Stores user's favorite verses. Uses path-based ownership for security.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user."
+              "description": "The unique identifier for the user."
             },
             {
               "name": "favoriteVerseId",
-              "description": "The unique identifier of the favorite verse."
+              "description": "The unique identifier for the favorite verse entry."
             }
           ]
         }
@@ -216,11 +235,11 @@
           "schema": {
             "$ref": "#/backend/entities/Verse"
           },
-          "description": "Stores Bible verse data. Publicly readable.",
+          "description": "Stores the Bible verses.",
           "params": [
             {
               "name": "verseId",
-              "description": "The unique identifier of the verse."
+              "description": "The unique identifier for the verse."
             }
           ]
         }
@@ -232,32 +251,16 @@
           "schema": {
             "$ref": "#/backend/entities/DailyVerse"
           },
-          "description": "Stores the verse of the day. Document ID is equal to the date. Publicly readable.",
+          "description": "Stores the verse of the day.",
           "params": [
             {
               "name": "date",
-              "description": "The date for which this is the daily verse (YYYY-MM-DD)."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/reflections/{reflectionId}",
-        "definition": {
-          "entityName": "Reflection",
-          "schema": {
-            "$ref": "#/backend/entities/Reflection"
-          },
-          "description": "Stores AI-powered reflections on Bible verses. Publicly readable.",
-          "params": [
-            {
-              "name": "reflectionId",
-              "description": "The unique identifier of the reflection."
+              "description": "The date for which this verse is the daily verse. Serves as the document ID."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to address the error reported (Firebase Auth configuration not found) and to support the app's core features with a focus on security, scalability, and debuggability. The structure prioritizes authorization independence, clarity of intent, and adherence to DBAC principles (Database Based Access Control).  Path-based ownership is leveraged for private user data (e.g., favorite verses). The 'DailyVerse' collection uses document IDs equal to the date for easy access and to ensure only one daily verse exists per day. The structure supports QAPs by segregating data based on access requirements and leveraging path-based ownership for user-specific data. The structure also facilitates the storage and retrieval of AI-powered reflections on Bible verses. This design eliminates the need for complex security rules by ensuring data is stored in a way that naturally aligns with access control requirements, making the rules simpler to write and easier to debug."
+    "reasoning": "The Firestore data structure is designed to support the 'Daily Script' app, focusing on efficient data retrieval, user-specific data isolation, and scalable security rules. Authorization Independence is achieved through path-based ownership for user-specific data and denormalization where necessary. QAPs are supported via structural segregation ensuring secure list operations.\n\n*   **Users**: Each user has their own document in the `/users` collection, storing profile information and a reference to their settings. This isolates user data and simplifies security rules.\n*   **UserSettings**: Each user has a dedicated document in `/users/{userId}/settings` to store app preferences. Path-based ownership ensures only the user can access their settings.\n*   **FavoriteVerses**: Each user has a subcollection `/users/{userId}/favoriteVerses` to store their favorited verses. This isolates favorite verses per user and allows simple security rules based on the `userId`.\n*   **Verses**: The `/verses` collection stores all verses. There is also a subcollection `/dailyVerses/{date}` which stores the verse IDs. Daily verses use a date-based document ID to allow efficient querying. This design supports QAPs because verses are public and daily verses are queryable by date.\n\nThis structure prioritizes security, scalability, and ease of maintenance, aligning with the core design principles."
   }
 }
